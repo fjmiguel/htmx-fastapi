@@ -1,0 +1,15 @@
+<li id="item-{{ item.id }}">
+  <form
+    hx-put="/items/{{ item.id }}"
+    hx-target="#items-list"
+    hx-swap="innerHTML">
+      <input type="text" name="name" value="{{ item.name }}">
+      <button type="submit">Save</button>
+      <button
+        hx-get="/items/{{ item.id }}/cancel"
+        hx-target="#items-list"
+        hx-swap="innerHTML">
+        Cancel
+    </button>
+  </form>
+</li>
