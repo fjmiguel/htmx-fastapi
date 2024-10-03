@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+jinja2   # Template rendering engine
+httpx    # For testing
+pytest   # For running unit tests
+python-multipart
