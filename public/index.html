@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="htmx-config" content='{"selfRequestsOnly":false}'>
+    <title>HTMX FastAPI Headless CRUD</title>
+    <script src="https://unpkg.com/htmx.org"></script>
+    <script src="scripts.js"></script>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <h1>Items list</h1>
+    <form
+      id="create-item-form"
+      hx-post="http://localhost:8080/items"
+      hx-trigger="submit"
+      hx-swap="none"
+      hx-on="htmx:afterOnLoad:clearInput(this)"
+    >
+      <input type="text" name="name" id="item-name" placeholder="Enter item name" required />
+      <button type="submit">Add Item</button>
+    </form>
+
+    <div id="items-container">
+      <ul
+        id="items-list"
+        hx-get="http://localhost:8080/items"
+        hx-swap="outerHTML"
+      >
+        <!-- Items will be dynamically loaded here -->
+      </ul>
+    </div>
+  </body>
+  <script>
+    // Event listener for handling HTMX's afterRequest
+    document.body.addEventListener('htmx:afterRequest', function(event) {
+      if (event.target.id === "create-item-form") {
+        const responseText = event.detail.xhr.responseText;
+        try {
+          clearInput(document.getElementById('create-item-form'));
+          document.getElementById('items-list').innerHTML += renderItem(JSON.parse(responseText));
+        } catch (error) {
+          console.error('Error on add item to the list');
+        }
+      }
+    });
+
+    // Load and render items on page load using HTMX
+    document.addEventListener('htmx:load', async () => {
+      document.getElementById('items-list').innerHTML = '';
+      const items = await fetch('http://localhost:8080/items')
+        .then(response => response.json())
+        .then(data => data)
+        .catch(error => {
+          throw(error);
+        });
+
+      const renderedItems = renderItems(items);
+
+      if (renderedItems) {
+        document.getElementById('items-list').innerHTML = renderItems(items);
+      }
+    });
+
+    // When edit is clicked, replace the item with an edit form
+    // WIP
+    /* document.body.addEventListener('click', function (event) {
+      if (event.target.classList.contains('edit-button')) {
+        const itemId = event.target.getAttribute('hx-get').split('/')[2]
+        const itemName = event.target.previousElementSibling.textContent;
+
+        const editTemplate = document.getelementById('edit-item-template').innerHTML;
+        const editForm = editTemplate
+          .replace(/{{id}}/g, itemId)
+          .replace(/{{name}}/g, itemName);
+
+        document.getElementById(`item-${itemId}`).outerHTML = editForm;
+      }
+    }); */
+  </script>
+</html>
